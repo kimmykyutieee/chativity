@@ -1,0 +1,34 @@
+{% extends "sidebar.html" %}
+{% block content %}
+<div style="max-width:600px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.05)">
+    <h2>{{ task.title }}</h2>
+    <p><strong>Description:</strong> {{ task.description or '-' }}</p>
+    <p><strong>Assigned to:</strong> {% if task.assigned_to == session.get('user_id') %}You{% else %}{{ task.assigned_name }}{% endif %}</p>
+    <p><strong>Assigned by:</strong> {% if task.created_by == session.get('user_id') %}You{% else %}{{ task.created_name }}{% endif %}</p>
+    <p><strong>Group:</strong> {{ task.group_name or 'Personal' }}</p>
+    <p><strong>Priority:</strong> {{ task.priority|capitalize }}</p>
+    <p><strong>Status:</strong> {{ task.status|capitalize }} {% if task.is_approved %}(Approved){% endif %}</p>
+    <p><strong>Created At:</strong> {{ task.created_at }}</p>
+    <p><strong>Deadline:</strong> {{ task.due_date or 'No deadline' }}</p>
+    {% if task.work_link %}
+    <p><strong>Work Link:</strong> <a href="{{ task.work_link }}" target="_blank">{{ task.work_link }}</a></p>
+    {% endif %}
+
+    <div style="margin-top:20px;">
+        {% if task.assigned_to == session.get('user_id') %}
+            <form action="{{ url_for('task_bp.toggle_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                <button type="submit" style="background:none;border:none;color:{{ 'green' if task.status=='completed' else 'blue' }};cursor:pointer;">
+                    {% if task.status=='completed' %}✔ Mark Undone{% else %}✔ Mark Done{% endif %}
+                </button>
+            </form>
+        {% endif %}
+
+        {% if task.created_by == session.get('user_id') and task.status=='completed' and not task.is_approved %}
+            <a href="{{ url_for('task_bp.approve_task', task_id=task.id) }}" style="color:orange;">✅ Approve Task</a>
+        {% elif task.is_approved %}
+            <span style="color:green;">✅ Approved</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

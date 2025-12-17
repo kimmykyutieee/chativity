@@ -1,55 +1,58 @@
 {% extends "sidebar.html" %}
 {% block content %}
 
-<h2>Create Task</h2>
-<form method="POST">
-    <label>Title</label>
-    <input type="text" name="title" required><br><br>
-
-    <label>Description</label>
-    <textarea name="description"></textarea><br><br>
-
-    <label>Due Date</label>
-    <input type="date" name="due_date"><br><br>
-
-    <label>Priority</label>
-    <select name="priority">
-        <option value="high">High</option>
-        <option value="medium" selected>Medium</option>
-        <option value="low">Low</option>
-    </select><br><br>
-
-    <label>Assign To</label>
-    <select name="assigned_to">
-        <option value="">Self</option>
-        {% for user in users %}
-        <option value="{{ user.id }}">{{ user.name }}</option>
-        {% endfor %}
-    </select><br><br>
-
-    <button type="submit">Create Task</button>
-</form>
+<h2>Your Tasks</h2>
+<a href="{{ url_for('task_bp.new_task_personal') }}" style="margin-bottom:20px;display:inline-block;">+ New Task</a>
 
 <div class="tasks-card">
     {% for task in tasks %}
-    <div class="task-row" data-detail="{{ url_for('task_bp.task_detail', task_id=task.id) }}">
-        <div><input type="checkbox" class="task-checkbox" {% if task.status=='completed' %}checked{% endif %} /></div>
-        <div class="task-content">
-            <div class="task-title">{{ task.title }}</div>
-            <div class="task-desc">{{ task.description }}</div>
-            <div class="task-meta">
-                <div class="meta-item">📅 Due {{ task.due_date }}</div>
-                <div class="meta-item">👤 Assigned to {{ task.assigned_name or 'You' }}</div>
+    <div class="task-row" style="border:1px solid #ccc;padding:10px;margin-bottom:10px;border-radius:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <strong>{{ task.title }}</strong> 
+                {% if task.group_name %} (Group: {{ task.group_name }}){% endif %}
+            </div>
+            <div>
+                <a href="{{ url_for('task_bp.task_view', task_id=task.id) }}" 
+                   style="background:#667eea;color:white;padding:4px 8px;border-radius:6px;text-decoration:none;font-size:14px;">
+                   View Details
+                </a>
             </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
-            <div class="priority {{ task.priority }}">{{ task.priority|capitalize }}</div>
-        </div>
-        <div style="margin-left:10px;display:flex;flex-direction:column;gap:5px">
-            <a href="{{ url_for('task_bp.complete_task', task_id=task.id) }}" style="color:green;font-size:14px">✔ Complete</a>
-            {% if task.created_by == session.get('user_id') %}
-            <a href="{{ url_for('task_bp.delete_task', task_id=task.id) }}" style="color:red;font-size:14px">🗑 Delete</a>
+        <div style="margin-top:5px;">
+            <div>📅 Due: {{ task.due_date or 'No deadline' }}</div>
+            <div>👤 Assigned by: {% if task.created_by == session.get('user_id') %}You{% else %}{{ task.created_name }}{% endif %}</div>
+            <div>👥 Assigned to: {% if task.assigned_to == session.get('user_id') %}You{% else %}{{ task.assigned_name }}{% endif %}</div>
+            {% if task.work_link %}
+            <div>🔗 Work Link: <a href="{{ task.work_link }}" target="_blank">{{ task.work_link }}</a></div>
             {% endif %}
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:10px;">
+
+            {# Mark Done/Undone using POST form #}
+            {% if task.assigned_to == session.get('user_id') %}
+                <form action="{{ url_for('task_bp.toggle_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" style="background:none;border:none;color:{{ 'green' if task.status=='completed' else 'blue' }};cursor:pointer;font-size:14px;">
+                        {% if task.status=='completed' %}✔ Mark Undone{% else %}✔ Mark Done{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+
+            {# Approve Task #}
+            {% if task.created_by == session.get('user_id') and task.status=='completed' and not task.is_approved %}
+                <a href="{{ url_for('task_bp.approve_task', task_id=task.id) }}" 
+                   style="color:orange;font-size:14px;">✅ Approve Task</a>
+            {% elif task.is_approved %}
+                <span style="color:green;font-size:14px;">✅ Approved</span>
+            {% endif %}
+
+            {# Delete Task #}
+            {% if task.created_by == session.get('user_id') %}
+                <a href="{{ url_for('task_bp.delete_task', task_id=task.id) }}" 
+                   style="color:red;font-size:14px;">🗑 Delete</a>
+            {% endif %}
+
         </div>
     </div>
     {% else %}

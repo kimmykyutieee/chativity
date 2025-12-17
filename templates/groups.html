@@ -2,6 +2,7 @@
 {% block content %}
 <h2>Your Groups</h2>
 <a href="{{ url_for('group_bp.new_group') }}">+ New Group</a>
+<a href="{{ url_for('group_bp.join_group_by_code') }}">Join Group</a>
 <ul>
 {% for g in groups %}
     <li><a href="{{ url_for('group_bp.group_chat', group_id=g.id) }}">{{ g.name }}</a></li>

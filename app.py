@@ -3,27 +3,25 @@ from database_connector import get_db_connection
 
 # Import all route blueprints
 from routes.index_route import index_bp
-from routes.auth_route import auth_bp        # Updated to match auth_route
+from routes.auth_route import auth_bp
 from routes.dashboard_route import dashboard_bp
 from routes.profile_route import profile_bp
 from routes.task_route import task_bp
-from routes.sidebar_route import sidebar_bp
 from routes.notification_route import notification_bp
-from routes.group_routes import group_bp
+from routes.group_route import group_bp
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Needed for session management
 
 # -----------------------------
-# REGISTER ROUTES
+# REGISTER BLUEPRINTS
 # -----------------------------
-app.register_blueprint(notification_bp)
 app.register_blueprint(index_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(profile_bp)
 app.register_blueprint(task_bp)
-app.register_blueprint(sidebar_bp)
+app.register_blueprint(notification_bp)
 app.register_blueprint(group_bp)
 
 # -----------------------------
@@ -31,7 +29,6 @@ app.register_blueprint(group_bp)
 # -----------------------------
 @app.route("/")
 def home():
-    # Redirect to the index blueprint
     return redirect(url_for("index_bp.index"))
 
 # -----------------------------

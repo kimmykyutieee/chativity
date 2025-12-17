@@ -1,6 +1,13 @@
 {% extends "sidebar.html" %}
 {% block content %}
 <h2>Group: {{ group.name }}</h2>
+<p>Group Code: <strong>{{ group.code }}</strong></p>
+
+{% if group.created_by == session.get('user_id') %}
+<form action="{{ url_for('group_bp.delete_group', group_id=group.id) }}" method="POST" style="margin-bottom:10px;">
+    <button type="submit" onclick="return confirm('Are you sure you want to delete this group?');">Delete Group</button>
+</form>
+{% endif %}
 
 <div style="border:1px solid #ccc;padding:10px;height:300px;overflow-y:auto">
     {% for msg in messages %}
@@ -20,5 +27,6 @@
 {% endfor %}
 </ul>
 
-<a href="{{ url_for('task_bp.new_task') }}">Add Task to Group</a>
+<a href="{{ url_for('task_bp.new_task_group', group_id=group.id) }}">Add Task to Group</a>
+
 {% endblock %}
